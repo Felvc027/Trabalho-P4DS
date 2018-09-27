@@ -36,13 +36,12 @@ def analise(age,index=False, gdp=False, regression=False):
                 var = reg.rsquared
                 k = i
         reg = sm.ols(formula='y~pow(x,{})'.format(k), data=comp).fit()
-        if regression == "r**2":
-            return reg.rsquared
-        elif regression == "coef":
-            return reg.params
+        if regression == "analise":
+            return (reg.rsquared, reg.params)
         elif regression == "plot":
             print(reg.params)
             print("r**2: {}".format(reg.rsquared))
+            print("Country: {}".format(len(comp)))
             plt.scatter(y=comp['y'], x=comp['x'], color='blue', s=50, alpha=.5)
             X_plot = sp.linspace(min(comp['x']), max(comp['x']), len(comp['x']))
             plt.plot(X_plot, (X_plot**k)*reg.params[1] + reg.params[0], color='r')
