@@ -1,5 +1,9 @@
-def analise(age,index=False, gdp=False):
+def analise(age,index=False, gdp=False, regression=False):
+    import scipy as sp
     import pandas as pd
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import statsmodels.formula.api as sm
     import indic
     if age==False:
         print(indic.indices.replace("_", " ").replace(".xls",""))
@@ -21,5 +25,30 @@ def analise(age,index=False, gdp=False):
         return data
     elif gdp == False:
         return data[index]
-    else:
+    elif regression == False:
         return data[[index,'GDP per capita']].dropna()
+    else:
+        comp = data[[index,'GDP per capita']].dropna()
+        var, comp.columns = 0, ["x","y"]
+        for i in np.arange(0.01,5.01,0.01):
+            reg = sm.ols(formula='y~pow(x,{})'.format(i), data=comp).fit()
+            if reg.rsquared > var:
+                var = reg.rsquared
+                k = i
+        reg = sm.ols(formula='y~pow(x,{})'.format(k), data=comp).fit()
+        if regression == "r**2":
+            return reg.rsquared
+        elif regression == "coef":
+            return reg.params
+        elif regression == "plot":
+            print(reg.params)
+            print("r**2: {}".format(reg.rsquared))
+            plt.scatter(y=comp['y'], x=comp['x'], color='blue', s=50, alpha=.5)
+            X_plot = sp.linspace(min(comp['x']), max(comp['x']), len(comp['x']))
+            plt.plot(X_plot, (X_plot**k)*reg.params[1] + reg.params[0], color='r')
+            plt.title('Curva Ajustada')
+            plt.xlabel(index)
+            plt.ylabel("GDP per capita")
+            plt.show()
+        else:
+            return reg.summary()
